@@ -157,7 +157,7 @@ builder.Services.AddRateLimiter(options =>
             }
         }
 
-        return string.IsNullOrEmpty(ip) ? "unknown" : ip;
+        return string.IsNullOrEmpty(ip) ? Guid.NewGuid().ToString() : ip;
     }
 
     options.OnRejected = async (context, token) =>

@@ -77,7 +77,7 @@ public class UsersController(
                 u.Program,
                 u.IsActive,
                 u.CreatedAt,
-                isLockedOut = u.IsLockedOut && u.LockoutEnd.HasValue && u.LockoutEnd.Value.DateTime > now,
+                isLockedOut = u.IsLockedOut || (u.LockoutEnd.HasValue && u.LockoutEnd.Value.DateTime > now),
                 lockoutEnd = u.LockoutEnd,
                 OrganizationName = orgNames.TryGetValue(u.TenantID, out var name) ? name : "System"
             }).ToList();
