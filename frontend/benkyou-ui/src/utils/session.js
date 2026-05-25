@@ -73,7 +73,11 @@ export function isTokenExpired(token = getToken()) {
 
 export function getSession() {
   const token = getToken();
-  if (!token || isTokenExpired(token)) {
+  if (!token) {
+    return null;
+  }
+
+  if (isTokenExpired(token)) {
     clearSession();
     return null;
   }
@@ -132,10 +136,16 @@ export function clearSession() {
   const storage = getStorage();
   if (!storage) return;
 
-  storage.removeItem(TOKEN_KEY);
-  storage.removeItem(USER_KEY);
-  storage.removeItem(TENANT_KEY);
-  window.dispatchEvent(new Event("benkyou:session-changed"));
+  const hasToken = !!storage.getItem(TOKEN_KEY);
+  const hasUser = !!storage.getItem(USER_KEY);
+  const hasTenant = !!storage.getItem(TENANT_KEY);
+
+  if (hasToken || hasUser || hasTenant) {
+    storage.removeItem(TOKEN_KEY);
+    storage.removeItem(USER_KEY);
+    storage.removeItem(TENANT_KEY);
+    window.dispatchEvent(new Event("benkyou:session-changed"));
+  }
 }
 
 export function isAuthenticated() {
