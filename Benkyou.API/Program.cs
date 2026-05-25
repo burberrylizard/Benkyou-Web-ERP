@@ -117,9 +117,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(FrontendCorsPolicy,
         policy => policy
-            .AllowAnyOrigin()
+            .SetIsOriginAllowed(origin => true)
             .AllowAnyMethod()
-            .AllowAnyHeader());
+            .AllowAnyHeader()
+            .AllowCredentials());
 });
 
 // RATE LIMITER
