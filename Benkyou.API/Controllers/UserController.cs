@@ -30,17 +30,43 @@ public class UsersController(
     [HttpGet]
     public async Task<IActionResult> GetUsers()
     {
-        var query = _db.Users.AsQueryable();
-
-        if (!IsSuperAdmin)
+        try
         {
-            query = query.Where(u => u.TenantID == TenantId);
-        }
+            var query = _db.Users.AsQueryable();
 
-        // Materialize raw data first — avoid EF Core SQL translation issues
-        // with DateTimeOffset.Value.DateTime on datetime2 columns
-        var rawUsers = await query
-            .Select(u => new {
+            if (!IsSuperAdmin)
+            {
+                query = query.Where(u => u.TenantID == TenantId);
+            }
+
+            // Materialize raw data first — avoid EF Core SQL translation issues
+            // with DateTimeOffset.Value.DateTime on datetime2 columns
+            var rawUsers = await query
+                .Select(u => new {
+                    u.Id,
+                    u.FirstName,
+                    u.LastName,
+                    u.Email,
+                    u.Role,
+                    u.YearEnrolled,
+                    u.YearLevel,
+                    u.Program,
+                    u.IsActive,
+                    u.CreatedAt,
+                    u.IsLockedOut,
+                    u.LockoutEnd,
+                    u.TenantID
+                })
+                .ToListAsync();
+
+            // Load all org names in one query to avoid N+1
+            var tenantIds = rawUsers.Select(u => u.TenantID).Distinct().ToList();
+            var orgNames = await _db.Organizations
+                .Where(o => tenantIds.Contains(o.TenantID))
+                .ToDictionaryAsync(o => o.TenantID, o => o.Name);
+
+            var now = DateTime.UtcNow;
+            var users = rawUsers.Select(u => new {
                 u.Id,
                 u.FirstName,
                 u.LastName,
@@ -51,36 +77,24 @@ public class UsersController(
                 u.Program,
                 u.IsActive,
                 u.CreatedAt,
-                u.IsLockedOut,
-                u.LockoutEnd,
-                u.TenantID
-            })
-            .ToListAsync();
+                isLockedOut = u.IsLockedOut && u.LockoutEnd.HasValue && u.LockoutEnd.Value.DateTime > now,
+                lockoutEnd = u.LockoutEnd,
+                OrganizationName = orgNames.TryGetValue(u.TenantID, out var name) ? name : "System"
+            }).ToList();
 
-        // Load all org names in one query to avoid N+1
-        var tenantIds = rawUsers.Select(u => u.TenantID).Distinct().ToList();
-        var orgNames = await _db.Organizations
-            .Where(o => tenantIds.Contains(o.TenantID))
-            .ToDictionaryAsync(o => o.TenantID, o => o.Name);
-
-        var now = DateTime.UtcNow;
-        var users = rawUsers.Select(u => new {
-            u.Id,
-            u.FirstName,
-            u.LastName,
-            u.Email,
-            u.Role,
-            u.YearEnrolled,
-            u.YearLevel,
-            u.Program,
-            u.IsActive,
-            u.CreatedAt,
-            isLockedOut = u.IsLockedOut && u.LockoutEnd.HasValue && u.LockoutEnd.Value.DateTime > now,
-            lockoutEnd = u.LockoutEnd,
-            OrganizationName = orgNames.TryGetValue(u.TenantID, out var name) ? name : "System"
-        }).ToList();
-
-        return Ok(users);
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                error = "Diagnostic 500 error in GetUsers",
+                message = ex.Message,
+                type = ex.GetType().FullName,
+                stackTrace = ex.StackTrace,
+                innerException = ex.InnerException?.Message
+            });
+        }
     }
 
     // GET SINGLE USER
