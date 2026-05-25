@@ -58,6 +58,13 @@ namespace Benkyou.Data
             mb.Entity<User>(e =>
             {
                 e.HasIndex(x => new { x.TenantID, x.Email }).IsUnique();
+
+                // Map database datetime2 (DateTime) to C# DateTimeOffset? to prevent InvalidCastException
+                e.Property(u => u.LockoutEnd)
+                    .HasConversion(
+                        v => v.HasValue ? v.Value.DateTime : (DateTime?)null,
+                        v => v.HasValue ? new DateTimeOffset(v.Value, TimeSpan.Zero) : (DateTimeOffset?)null
+                    );
             });
 
             mb.Entity<TermsAcceptance>(e =>
