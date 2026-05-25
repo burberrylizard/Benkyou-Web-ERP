@@ -8,6 +8,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useTenant } from "../../context/TenantContext";
 import { useState, useEffect } from "react";
+import { getAuditLogs } from "../../services/auditLogService";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -15,7 +16,30 @@ export default function AdminDashboard() {
   const { data, isLoading, error } = useApiData(getDashboardSummary);
   const { data: analyticsData } = useApiData(getAnalytics);
 
+  // Security Lockout Alerts states
+  const [securityAlerts, setSecurityAlerts] = useState([]);
+  const [loadingAlerts, setLoadingAlerts] = useState(false);
 
+  useEffect(() => {
+    async function loadSecurityAlerts() {
+      try {
+        setLoadingAlerts(true);
+        const logs = await getAuditLogs();
+        const filteredAlerts = (logs || []).filter(log => 
+          log.action?.toLowerCase().includes("suspicious") || 
+          log.action?.toLowerCase().includes("locked") ||
+          log.details?.toLowerCase().includes("suspicious") || 
+          log.details?.toLowerCase().includes("locked")
+        );
+        setSecurityAlerts(filteredAlerts.slice(0, 5)); // Show recent 5 alerts
+      } catch (err) {
+        console.error("Failed to load security logs", err);
+      } finally {
+        setLoadingAlerts(false);
+      }
+    }
+    loadSecurityAlerts();
+  }, []);
 
   if (isLoading) return (
     <DashboardLayout theme={ADMIN_THEME} role="Admin" navGroups={getNav("Dashboard")} headerTitle="Admin dashboard" headerSub="Loading data...">
@@ -154,6 +178,72 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* SECURITY LOCKOUT SECURITY ALERTS FEED */}
+      <div style={{ 
+        ...s.tableCard, 
+        marginTop: 24, 
+        borderColor: securityAlerts.length > 0 ? "#ef4444" : "rgba(16,185,129,0.3)", 
+        background: securityAlerts.length > 0 ? "rgba(239,68,68,0.02)" : "rgba(16,185,129,0.02)", 
+        transition: "all 0.3s" 
+      }}>
+        <div style={s.cardHeader}>
+          <h2 style={{ ...s.cardTitle, display: "flex", alignItems: "center", gap: 8, color: securityAlerts.length > 0 ? "#ef4444" : "#10b981" }}>
+            {securityAlerts.length > 0 ? "🛡️ Suspicious Security Alerts Feed" : "🛡️ System Security Status: Secure"}
+          </h2>
+          <span style={{ 
+            fontSize: 11, 
+            background: securityAlerts.length > 0 ? "rgba(239,68,68,0.15)" : "rgba(16,185,129,0.15)", 
+            color: securityAlerts.length > 0 ? "#ef4444" : "#10b981", 
+            padding: "4px 8px", 
+            borderRadius: 4, 
+            fontWeight: 700 
+          }}>
+            {securityAlerts.length > 0 ? "ACTION REQUIRED" : "PROTECTED"}
+          </span>
+        </div>
+
+        {loadingAlerts ? (
+          <div style={{ color: "#6b7280", fontSize: 13, padding: 16 }}>Scanning security logs...</div>
+        ) : securityAlerts.length === 0 ? (
+          <div style={{ padding: "16px 0", color: "#4b5563", fontSize: 13, display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 16 }}>✅</span> No suspicious lockout attempts or brute-force warnings detected in the system audit logs. All tenant authentication endpoints remain fully secure.
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ fontSize: 12, color: "#4b5563", marginBottom: 4 }}>
+              ⚠️ The following authentication anomalies and suspicious lockout warnings were recorded in the audit trail:
+            </div>
+            {securityAlerts.map((alert, i) => (
+              <div 
+                key={alert.id || i}
+                style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: 12, 
+                  padding: 12, 
+                  borderRadius: 8, 
+                  background: "rgba(239,68,68,0.05)", 
+                  border: "1px solid rgba(239,68,68,0.2)" 
+                }}
+              >
+                <div style={{ fontSize: 16 }}>🚨</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, color: "#111827", fontSize: 13, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                    {alert.action}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#4b5563", marginTop: 2, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                    User: {alert.userEmail} · IP: {alert.ipAddress}
+                  </div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontSize: 11, color: "#ef4444", fontWeight: 600 }}>{alert.entityType}</div>
+                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>{new Date(alert.createdAt).toLocaleDateString()}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
     </DashboardLayout>
   );
