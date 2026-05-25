@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +19,10 @@ namespace Benkyou.Data.Models
 
         public decimal PriceMonthly { get; set; }
         public decimal PriceYearly { get; set; }
+
+        public string? StripeProductId { get; set; }
+        public string? StripePriceIdMonthly { get; set; }
+        public string? StripePriceIdYearly { get; set; }
 
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

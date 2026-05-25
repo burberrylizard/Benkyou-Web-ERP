@@ -1,4 +1,4 @@
-@Benkyou.API_HostAddress = http://localhost:5013
+@Benkyou.API_HostAddress = http://localhost:5130
 
 GET {{Benkyou.API_HostAddress}}/weatherforecast/
 Accept: application/json

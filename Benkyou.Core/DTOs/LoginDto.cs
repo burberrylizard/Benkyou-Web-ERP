@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,8 @@ namespace Benkyou.Core.DTOs
 {
     public class LoginDto
     {
-        public string Email { get; set; } = "";
+        public string Identifier { get; set; } = "";
         public string Password { get; set; } = "";
+        public string? TenantCode { get; set; }
     }
 }

@@ -11,6 +11,10 @@ namespace Benkyou.Data.Models
         public int CategoryID { get; set; }
         public Guid TenantID { get; set; }
 
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; } = "";
+
+        public bool IsActive { get; set; } = true;
+
+        public ICollection<Course> Courses { get; set; } = new List<Course>();
     }
 }

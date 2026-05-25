@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +10,14 @@ namespace Benkyou.Data.Models
     {
         public int CourseInstructorID { get; set; }
 
+        public Guid TenantID { get; set; }
+
         public int CourseID { get; set; }
-        public int UserID { get; set; }
+        public Course Course { get; set; } = null!;
+
+        public Guid InstructorID { get; set; }
+        public User Instructor { get; set; } = null!;
+
+        public DateTime AssignedAt { get; set; }
     }
 }

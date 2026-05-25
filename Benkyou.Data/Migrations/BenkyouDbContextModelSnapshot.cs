@@ -17,10 +17,45 @@ namespace Benkyou.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Benkyou.Data.Models.AnnouncementReply", b =>
+                {
+                    b.Property<int>("AnnouncementReplyID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnnouncementReplyID"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CourseAnnouncementID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("AnnouncementReplyID");
+
+                    b.HasIndex("CourseAnnouncementID");
+
+                    b.HasIndex("TenantID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("AnnouncementReplies");
+                });
 
             modelBuilder.Entity("Benkyou.Data.Models.Assessment", b =>
                 {
@@ -33,13 +68,95 @@ namespace Benkyou.Data.Migrations
                     b.Property<int>("CourseID")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PassingScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("ShowAnswersAfter")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("ShuffleQuestions")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TimeLimitMinutes")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("AssessmentID");
 
+                    b.HasIndex("CourseID");
+
                     b.ToTable("Assessments");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.AssessmentResult", b =>
+                {
+                    b.Property<int>("AssessmentResultID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AssessmentResultID"));
+
+                    b.Property<int>("AssessmentID")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPassed")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Score")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("StudentID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("AssessmentResultID");
+
+                    b.HasIndex("AssessmentID");
+
+                    b.HasIndex("StudentID");
+
+                    b.ToTable("AssessmentResults");
                 });
 
             modelBuilder.Entity("Benkyou.Data.Models.AuditLog", b =>
@@ -57,16 +174,75 @@ namespace Benkyou.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("EntityName")
+                    b.Property<string>("EntityID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IPAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NewValues")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValues")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("TenantID")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("AuditLogID");
 
                     b.ToTable("AuditLogs");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.BatchEnrollmentLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CourseID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EnrolledByUserID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FilterProgram")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilterYearLevel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentsEnrolled")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseID");
+
+                    b.HasIndex("EnrolledByUserID");
+
+                    b.HasIndex("TenantID");
+
+                    b.ToTable("BatchEnrollmentLogs");
                 });
 
             modelBuilder.Entity("Benkyou.Data.Models.Category", b =>
@@ -76,6 +252,9 @@ namespace Benkyou.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryID"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -89,6 +268,44 @@ namespace Benkyou.Data.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("Benkyou.Data.Models.ClassSection", b =>
+                {
+                    b.Property<int>("ClassSectionID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClassSectionID"));
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CourseID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("InstructorID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ClassSectionID");
+
+                    b.HasIndex("CourseID");
+
+                    b.HasIndex("InstructorID");
+
+                    b.HasIndex("TenantID");
+
+                    b.ToTable("ClassSections");
+                });
+
             modelBuilder.Entity("Benkyou.Data.Models.ContentItem", b =>
                 {
                     b.Property<int>("ContentItemID")
@@ -97,7 +314,8 @@ namespace Benkyou.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ContentItemID"));
 
-                    b.Property<string>("Content")
+                    b.Property<string>("Body")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ContentType")
@@ -107,13 +325,36 @@ namespace Benkyou.Data.Migrations
                     b.Property<int>("CourseSectionID")
                         .HasColumnType("int");
 
-                    b.Property<string>("FileUrl")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("bit");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Value")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -132,16 +373,29 @@ namespace Benkyou.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ContentProgressID"));
 
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("ContentItemID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EnrollmentID")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("UserID")
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TimeSpentSeconds")
                         .HasColumnType("int");
 
                     b.HasKey("ContentProgressID");
+
+                    b.HasIndex("ContentItemID");
+
+                    b.HasIndex("EnrollmentID");
 
                     b.ToTable("ContentProgresses");
                 });
@@ -157,14 +411,28 @@ namespace Benkyou.Data.Migrations
                     b.Property<int>("CategoryID")
                         .HasColumnType("int");
 
-                    b.Property<int>("CreatedByUserID")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByUserID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("TenantID")
                         .HasColumnType("uniqueidentifier");
@@ -175,7 +443,53 @@ namespace Benkyou.Data.Migrations
 
                     b.HasKey("CourseID");
 
+                    b.HasIndex("CategoryID");
+
+                    b.HasIndex("CreatedByUserID");
+
                     b.ToTable("Courses");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.CourseAnnouncement", b =>
+                {
+                    b.Property<int>("CourseAnnouncementID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CourseAnnouncementID"));
+
+                    b.Property<bool>("AllowReplies")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("AuthorID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CourseID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CourseAnnouncementID");
+
+                    b.HasIndex("AuthorID");
+
+                    b.HasIndex("CourseID");
+
+                    b.HasIndex("TenantID");
+
+                    b.ToTable("CourseAnnouncements");
                 });
 
             modelBuilder.Entity("Benkyou.Data.Models.CourseInstructor", b =>
@@ -186,13 +500,23 @@ namespace Benkyou.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CourseInstructorID"));
 
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("CourseID")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("InstructorID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("CourseInstructorID");
+
+                    b.HasIndex("CourseID");
+
+                    b.HasIndex("InstructorID");
 
                     b.ToTable("CourseInstructors");
                 });
@@ -208,8 +532,18 @@ namespace Benkyou.Data.Migrations
                     b.Property<int>("CourseID")
                         .HasColumnType("int");
 
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -222,6 +556,36 @@ namespace Benkyou.Data.Migrations
                     b.ToTable("CourseSections");
                 });
 
+            modelBuilder.Entity("Benkyou.Data.Models.EmailVerificationCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Expiry")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EmailVerificationCodes");
+                });
+
             modelBuilder.Entity("Benkyou.Data.Models.Enrollment", b =>
                 {
                     b.Property<int>("EnrollmentID")
@@ -230,25 +594,88 @@ namespace Benkyou.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EnrollmentID"));
 
+                    b.Property<int?>("ClassSectionID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("CourseID")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("DeadlineAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EnrolledAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("StudentID")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("TenantID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("EnrollmentID");
 
+                    b.HasIndex("ClassSectionID");
+
+                    b.HasIndex("CourseID");
+
+                    b.HasIndex("StudentID");
+
+                    b.HasIndex("UserId");
+
                     b.ToTable("Enrollments");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.EnrollmentRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CourseID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ReviewedByUserID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudentID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseID");
+
+                    b.HasIndex("ReviewedByUserID");
+
+                    b.HasIndex("StudentID");
+
+                    b.ToTable("EnrollmentRequests");
                 });
 
             modelBuilder.Entity("Benkyou.Data.Models.InstructorProfile", b =>
@@ -268,8 +695,8 @@ namespace Benkyou.Data.Migrations
                     b.Property<Guid>("TenantID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("InstructorProfileID");
 
@@ -286,6 +713,9 @@ namespace Benkyou.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationID"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsRead")
                         .HasColumnType("bit");
 
@@ -293,11 +723,29 @@ namespace Benkyou.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReferenceID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReferenceType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("TenantID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("NotificationID");
 
@@ -306,16 +754,30 @@ namespace Benkyou.Data.Migrations
 
             modelBuilder.Entity("Benkyou.Data.Models.Organization", b =>
                 {
-                    b.Property<int>("OrganizationID")
+                    b.Property<Guid>("TenantID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrganizationID"));
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AllowedMfaMethods")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CountryCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMfaRequired")
                         .HasColumnType("bit");
 
                     b.Property<string>("LogoUrl")
@@ -326,20 +788,42 @@ namespace Benkyou.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("OrganizationType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PrimaryEmail")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeCustomerId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeSubscriptionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SubscriptionID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SubscriptionStatus")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TenantCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<Guid>("TenantID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWID()");
+                    b.Property<string>("TimeZone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("OrganizationID");
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("TenantID");
 
                     b.HasIndex("TenantCode")
                         .IsUnique();
@@ -361,11 +845,30 @@ namespace Benkyou.Data.Migrations
                     b.Property<int>("AssessmentID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Text")
+                    b.Property<string>("Body")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("GradingNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Points")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("QuestionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("QuestionID");
+
+                    b.HasIndex("AssessmentID");
 
                     b.ToTable("Questions");
                 });
@@ -378,19 +881,109 @@ namespace Benkyou.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuestionChoiceID"));
 
+                    b.Property<string>("ChoiceText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsCorrect")
                         .HasColumnType("bit");
 
                     b.Property<int>("QuestionID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("QuestionChoiceID");
 
+                    b.HasIndex("QuestionID");
+
                     b.ToTable("QuestionChoices");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.StudentAnswer", b =>
+                {
+                    b.Property<int>("StudentAnswerID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentAnswerID"));
+
+                    b.Property<string>("EssayAnswer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("InstructorFeedback")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("IsCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("ManualScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("QuestionID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SelectedChoiceID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentAttemptID")
+                        .HasColumnType("int");
+
+                    b.HasKey("StudentAnswerID");
+
+                    b.HasIndex("QuestionID");
+
+                    b.HasIndex("StudentAttemptID");
+
+                    b.ToTable("StudentAnswers");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.StudentAttempt", b =>
+                {
+                    b.Property<int>("StudentAttemptID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentAttemptID"));
+
+                    b.Property<int>("AssessmentID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AttemptNumber")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Score")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("StudentID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("TenantID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("StudentAttemptID");
+
+                    b.HasIndex("AssessmentID");
+
+                    b.HasIndex("StudentID");
+
+                    b.ToTable("StudentAttempts");
                 });
 
             modelBuilder.Entity("Benkyou.Data.Models.StudentProfile", b =>
@@ -407,8 +1000,8 @@ namespace Benkyou.Data.Migrations
                     b.Property<Guid>("TenantID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("StudentProfileID");
 
@@ -445,6 +1038,12 @@ namespace Benkyou.Data.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeCustomerId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeSubscriptionId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("TenantID")
@@ -502,6 +1101,15 @@ namespace Benkyou.Data.Migrations
                         .HasPrecision(8, 2)
                         .HasColumnType("decimal(8,2)");
 
+                    b.Property<string>("StripePriceIdMonthly")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripePriceIdYearly")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeProductId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("PlanID");
 
                     b.ToTable("SubscriptionPlans");
@@ -509,11 +1117,9 @@ namespace Benkyou.Data.Migrations
 
             modelBuilder.Entity("Benkyou.Data.Models.SuperAdmin", b =>
                 {
-                    b.Property<int>("SuperAdminID")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SuperAdminID"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -533,29 +1139,80 @@ namespace Benkyou.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("OtpCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("OtpExpiry")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("SuperAdminID");
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
 
                     b.ToTable("SuperAdmins");
                 });
 
+            modelBuilder.Entity("Benkyou.Data.Models.TermsAcceptance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AcceptedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TermsVersion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserAgent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("TermsAcceptances");
+                });
+
             modelBuilder.Entity("Benkyou.Data.Models.User", b =>
                 {
-                    b.Property<int>("UserID")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserID"));
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("int");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -564,45 +1221,476 @@ namespace Benkyou.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsLockedOut")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LockoutEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ProfilePhotoPublicId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfilePhotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Program")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("TenantID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("UserID");
+                    b.Property<bool>("TermsAccepted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("TermsAcceptedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TermsAcceptedIp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TermsVersion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int?>("YearEnrolled")
+                        .HasColumnType("int");
+
+                    b.Property<string>("YearLevel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.HasIndex("TenantID", "Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("Roles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("RoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("UserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("UserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.AnnouncementReply", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.CourseAnnouncement", "Announcement")
+                        .WithMany("Replies")
+                        .HasForeignKey("CourseAnnouncementID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Announcement");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.Assessment", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.AssessmentResult", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.Assessment", "Assessment")
+                        .WithMany()
+                        .HasForeignKey("AssessmentID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.User", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Assessment");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.BatchEnrollmentLog", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.User", "EnrolledByUser")
+                        .WithMany()
+                        .HasForeignKey("EnrolledByUserID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("EnrolledByUser");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.ClassSection", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.User", "Instructor")
+                        .WithMany()
+                        .HasForeignKey("InstructorID")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Instructor");
                 });
 
             modelBuilder.Entity("Benkyou.Data.Models.ContentItem", b =>
                 {
-                    b.HasOne("Benkyou.Data.Models.CourseSection", null)
-                        .WithMany("ContentItems")
+                    b.HasOne("Benkyou.Data.Models.CourseSection", "Section")
+                        .WithMany("Contents")
                         .HasForeignKey("CourseSectionID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Section");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.ContentProgress", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.ContentItem", "Content")
+                        .WithMany()
+                        .HasForeignKey("ContentItemID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.Enrollment", "Enrollment")
+                        .WithMany()
+                        .HasForeignKey("EnrollmentID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Content");
+
+                    b.Navigation("Enrollment");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.Course", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.Category", "Category")
+                        .WithMany("Courses")
+                        .HasForeignKey("CategoryID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.CourseAnnouncement", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.CourseInstructor", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.Course", "Course")
+                        .WithMany("Instructors")
+                        .HasForeignKey("CourseID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.User", "Instructor")
+                        .WithMany()
+                        .HasForeignKey("InstructorID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Instructor");
                 });
 
             modelBuilder.Entity("Benkyou.Data.Models.CourseSection", b =>
                 {
-                    b.HasOne("Benkyou.Data.Models.Course", null)
+                    b.HasOne("Benkyou.Data.Models.Course", "Course")
                         .WithMany("Sections")
                         .HasForeignKey("CourseID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.EmailVerificationCode", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.Enrollment", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.ClassSection", "ClassSection")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("ClassSectionID")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Benkyou.Data.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.User", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.User", null)
+                        .WithMany("Enrollments")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("ClassSection");
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.EnrollmentRequest", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.User", "ReviewedByUser")
+                        .WithMany()
+                        .HasForeignKey("ReviewedByUserID")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Benkyou.Data.Models.User", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("ReviewedByUser");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Benkyou.Data.Models.InstructorProfile", b =>
@@ -614,6 +1702,66 @@ namespace Benkyou.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.Question", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.Assessment", "Assessment")
+                        .WithMany("Questions")
+                        .HasForeignKey("AssessmentID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Assessment");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.QuestionChoice", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.Question", "Question")
+                        .WithMany("Choices")
+                        .HasForeignKey("QuestionID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.StudentAnswer", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.Question", "Question")
+                        .WithMany("StudentAnswers")
+                        .HasForeignKey("QuestionID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.StudentAttempt", "Attempt")
+                        .WithMany("Answers")
+                        .HasForeignKey("StudentAttemptID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Attempt");
+
+                    b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.StudentAttempt", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.Assessment", "Assessment")
+                        .WithMany("Attempts")
+                        .HasForeignKey("AssessmentID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.User", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Assessment");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Benkyou.Data.Models.StudentProfile", b =>
@@ -638,29 +1786,117 @@ namespace Benkyou.Data.Migrations
                     b.Navigation("Plan");
                 });
 
-            modelBuilder.Entity("Benkyou.Data.Models.User", b =>
+            modelBuilder.Entity("Benkyou.Data.Models.TermsAcceptance", b =>
                 {
-                    b.HasOne("Benkyou.Data.Models.Organization", null)
-                        .WithMany("Users")
-                        .HasForeignKey("TenantID")
-                        .HasPrincipalKey("TenantID")
+                    b.HasOne("Benkyou.Data.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Benkyou.Data.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+                {
+                    b.HasOne("Benkyou.Data.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.Assessment", b =>
+                {
+                    b.Navigation("Attempts");
+
+                    b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.Category", b =>
+                {
+                    b.Navigation("Courses");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.ClassSection", b =>
+                {
+                    b.Navigation("Enrollments");
+                });
+
             modelBuilder.Entity("Benkyou.Data.Models.Course", b =>
                 {
+                    b.Navigation("Instructors");
+
                     b.Navigation("Sections");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.CourseAnnouncement", b =>
+                {
+                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("Benkyou.Data.Models.CourseSection", b =>
                 {
-                    b.Navigation("ContentItems");
+                    b.Navigation("Contents");
                 });
 
-            modelBuilder.Entity("Benkyou.Data.Models.Organization", b =>
+            modelBuilder.Entity("Benkyou.Data.Models.Question", b =>
                 {
-                    b.Navigation("Users");
+                    b.Navigation("Choices");
+
+                    b.Navigation("StudentAnswers");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.StudentAttempt", b =>
+                {
+                    b.Navigation("Answers");
+                });
+
+            modelBuilder.Entity("Benkyou.Data.Models.User", b =>
+                {
+                    b.Navigation("Enrollments");
                 });
 #pragma warning restore 612, 618
         }

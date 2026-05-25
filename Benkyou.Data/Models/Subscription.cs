@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,6 +22,9 @@ namespace Benkyou.Data.Models
         public bool AutoRenew { get; set; } = true;
 
         public string? Notes { get; set; }
+
+        public string? StripeSubscriptionId { get; set; }
+        public string? StripeCustomerId { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }

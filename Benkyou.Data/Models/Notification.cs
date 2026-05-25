@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,10 +12,20 @@ namespace Benkyou.Data.Models
 
         public Guid TenantID { get; set; }
 
-        public int UserID { get; set; }
+        public Guid UserID { get; set; }
 
-        public string Message { get; set; } = string.Empty;
+        public string Type { get; set; } = "";
+
+        public string Title { get; set; } = "";
+        public string Message { get; set; } = "";
+
+        public string ReferenceType { get; set; } = "";
+        public int ReferenceID { get; set; }
 
         public bool IsRead { get; set; }
+
+        public DateTime? ReadAt { get; set; }
+
+        public DateTime CreatedAt { get; set; }
     }
 }
