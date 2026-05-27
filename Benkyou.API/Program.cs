@@ -192,14 +192,28 @@ builder.Services.AddRateLimiter(options =>
 
     options.AddPolicy("login", context =>
     {
-        var clientIp = GetClientIp(context);
+        // Use email from request body as partition key to avoid shared-IP blocking
+        string partitionKey = "unknown";
+        try
+        {
+            context.Request.EnableBuffering();
+            using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
+            var body = reader.ReadToEndAsync().GetAwaiter().GetResult();
+            context.Request.Body.Position = 0;
+            var json = System.Text.Json.JsonDocument.Parse(body);
+            if (json.RootElement.TryGetProperty("identifier", out var emailProp))
+                partitionKey = emailProp.GetString()?.ToLowerInvariant() ?? GetClientIp(context);
+            else
+                partitionKey = GetClientIp(context);
+        }
+        catch { partitionKey = GetClientIp(context); }
 
-        if (clientIp == "127.0.0.1" || clientIp == "::1" || clientIp == "localhost")
+        if (partitionKey == "127.0.0.1" || partitionKey == "::1" || partitionKey == "localhost")
         {
             return RateLimitPartition.GetNoLimiter<string>("localhost");
         }
 
-        return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
+        return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 5,
             Window = TimeSpan.FromMinutes(15),
@@ -209,14 +223,28 @@ builder.Services.AddRateLimiter(options =>
 
     options.AddPolicy("verify-otp", context =>
     {
-        var clientIp = GetClientIp(context);
+        // Use tempToken from request body as partition key
+        string partitionKey = "unknown";
+        try
+        {
+            context.Request.EnableBuffering();
+            using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
+            var body = reader.ReadToEndAsync().GetAwaiter().GetResult();
+            context.Request.Body.Position = 0;
+            var json = System.Text.Json.JsonDocument.Parse(body);
+            if (json.RootElement.TryGetProperty("tempToken", out var tokenProp))
+                partitionKey = tokenProp.GetString() ?? GetClientIp(context);
+            else
+                partitionKey = GetClientIp(context);
+        }
+        catch { partitionKey = GetClientIp(context); }
 
-        if (clientIp == "127.0.0.1" || clientIp == "::1" || clientIp == "localhost")
+        if (partitionKey == "127.0.0.1" || partitionKey == "::1" || partitionKey == "localhost")
         {
             return RateLimitPartition.GetNoLimiter<string>("localhost");
         }
 
-        return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
+        return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 5,
             Window = TimeSpan.FromMinutes(10),
@@ -236,7 +264,7 @@ builder.Services.AddRateLimiter(options =>
         return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 3,
-            Window = TimeSpan.FromHours(1),
+            Window = TimeSpan.FromMinutes(30),
             QueueLimit = 0
         });
     });

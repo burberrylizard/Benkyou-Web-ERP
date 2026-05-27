@@ -238,8 +238,16 @@ export default function Users() {
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <StatusBadge status={u.isActive ? "Active" : "Inactive"} />
                         {u.isLockedOut && (
-                          <span style={{ background: "#fee2e2", color: "#ef4444", border: "1px solid #fca5a5", padding: "4px 10px", borderRadius: 12, fontSize: 12, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                          <span
+                            title={u.lockoutEnd ? `Locked until ${new Date(u.lockoutEnd).toLocaleString()}` : "Locked by administrator"}
+                            style={{ background: "#fee2e2", color: "#ef4444", border: "1px solid #fca5a5", padding: "4px 10px", borderRadius: 12, fontSize: 12, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4, cursor: "help", position: "relative" }}
+                          >
                             🔒 Locked
+                            {u.lockoutEnd && (
+                              <span style={{ fontSize: 10, opacity: 0.8, marginLeft: 2 }}>
+                                until {new Date(u.lockoutEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            )}
                           </span>
                         )}
                       </div>

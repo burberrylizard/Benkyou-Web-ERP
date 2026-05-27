@@ -55,6 +55,7 @@ public class UsersController(
                     u.CreatedAt,
                     u.IsLockedOut,
                     u.LockoutEnd,
+                    u.FailedLoginAttempts,
                     u.TenantID
                 })
                 .ToListAsync();
@@ -79,6 +80,7 @@ public class UsersController(
                 u.CreatedAt,
                 isLockedOut = u.IsLockedOut || (u.LockoutEnd.HasValue && u.LockoutEnd.Value.DateTime > now),
                 lockoutEnd = u.LockoutEnd,
+                failedLoginAttempts = u.FailedLoginAttempts,
                 OrganizationName = orgNames.TryGetValue(u.TenantID, out var name) ? name : "System"
             }).ToList();
 

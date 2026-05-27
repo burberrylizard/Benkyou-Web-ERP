@@ -146,9 +146,19 @@ export default function AllUsers() {
                     <td style={s.td}>{u.organizationName}</td>
                     <td style={s.td}><RoleBadge role={u.roleName} /></td>
                     <td style={s.td}>
-                      <span style={u.isActive ? s.statusActive : s.statusInactive}>
-                        {u.isActive ? "ACTIVE" : "INACTIVE"}
-                      </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={u.isActive ? s.statusActive : s.statusInactive}>
+                          {u.isActive ? "ACTIVE" : "INACTIVE"}
+                        </span>
+                        {u.isLockedOut && (
+                          <span
+                            title={u.lockoutEnd ? `Locked until ${new Date(u.lockoutEnd).toLocaleString()}` : "Locked by administrator"}
+                            style={{ background: "rgba(239, 68, 68, 0.15)", color: "#f87171", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "4px 10px", borderRadius: 12, fontSize: 12, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4, cursor: "help" }}
+                          >
+                            🔒 Locked
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td style={s.td}><span style={{ color: "#64748b" }}>{new Date(u.createdAt).toLocaleDateString()}</span></td>
                     <td style={{ ...s.td, position: "relative" }}>
