@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import DashboardLayout from "../../components/shared/DashboardLayout";
 import { SA_THEME, getNav, SA_STYLES as s } from "./saConfig";
 import { useApiData } from "../../hooks/useApiData";
-import { getUsers, toggleUserStatus, deleteUser } from "../../services/userService";
+import { getUsers, toggleUserStatus, deleteUser, unlockUser } from "../../services/userService";
 import { useAuth } from "../../context/AuthContext";
 import { getInitials } from "../../utils/session";
 import { apiRequest } from "../../api/client";
@@ -25,7 +25,8 @@ export default function AllUsers() {
   
   const displayUsers = (users || []).map(u => ({
     ...u,
-    roleName: ROLE_MAP[u.role] || "Unknown"
+    roleName: ROLE_MAP[u.role] || "Unknown",
+    _isLocked: u.isLockedOut || (u.failedLoginAttempts >= 5) || (u.lockoutEnd && new Date(u.lockoutEnd) > new Date())
   }));
 
   const filtered = displayUsers.filter((u) => {
@@ -53,6 +54,17 @@ export default function AllUsers() {
       } catch (err) {
         alert(err.message || "Failed to delete user");
       }
+    }
+  };
+
+  const handleUnlock = async (id) => {
+    setActiveMenu(null);
+    try {
+      await unlockUser(id);
+      alert("Account unlocked successfully");
+      reload();
+    } catch (err) {
+      alert(err.message || "Failed to unlock account: " + err.message);
     }
   };
 
@@ -150,7 +162,7 @@ export default function AllUsers() {
                         <span style={u.isActive ? s.statusActive : s.statusInactive}>
                           {u.isActive ? "ACTIVE" : "INACTIVE"}
                         </span>
-                        {u.isLockedOut && (
+                        {u._isLocked && (
                           <span
                             title={u.lockoutEnd ? `Locked until ${new Date(u.lockoutEnd).toLocaleString()}` : "Locked by administrator"}
                             style={{ background: "rgba(239, 68, 68, 0.15)", color: "#f87171", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "4px 10px", borderRadius: 12, fontSize: 12, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4, cursor: "help" }}
@@ -170,6 +182,9 @@ export default function AllUsers() {
                       {activeMenu === i && (
                         <div style={localS.menu}>
                           <div style={localS.menuItem} onClick={() => handleToggleStatus(u.id)}>{u.isActive ? "Deactivate" : "Activate"}</div>
+                          {u._isLocked && (
+                            <div style={{ ...localS.menuItem, color: "#10b981" }} onClick={() => handleUnlock(u.id)}>Unlock User</div>
+                          )}
                           <div style={{ ...localS.menuItem, color: "#ef4444" }} onClick={() => handleDeleteUser(u.id)}>Delete User</div>
                         </div>
                       )}

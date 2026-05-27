@@ -37,7 +37,12 @@ public class AuditLogsController(BenkyouDbContext db) : BaseController
                 a.IPAddress,
                 a.CreatedAt,
                 UserEmail = _db.Users.Where(u => u.Id == a.UserID).Select(u => u.Email).FirstOrDefault() ?? "System",
-                OrganizationName = _db.Organizations.Where(o => o.TenantID == a.TenantID).Select(o => o.Name).FirstOrDefault() ?? "System"
+                OrganizationName = _db.Organizations.Where(o => o.TenantID == a.TenantID).Select(o => o.Name).FirstOrDefault() ?? "System",
+                TargetName = a.EntityType == "User"
+                    ? (_db.Users.Where(u => u.Id.ToString() == a.EntityID).Select(u => u.Email).FirstOrDefault() ?? "")
+                    : a.EntityType == "Course"
+                    ? (_db.Courses.Where(c => c.CourseID.ToString() == a.EntityID).Select(c => c.Title).FirstOrDefault() ?? "")
+                    : ""
             })
             .ToListAsync();
 

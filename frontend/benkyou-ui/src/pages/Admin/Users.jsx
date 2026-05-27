@@ -49,7 +49,8 @@ export default function Users() {
     role: u.role === 1 || u.role === "1" ? "Admin" :
           u.role === 2 || u.role === "2" ? "Instructor" :
           u.role === 3 || u.role === "3" ? "Student" :
-          u.role === 5 || u.role === "5" ? "Operator" : u.role
+          u.role === 5 || u.role === "5" ? "Operator" : u.role,
+    _isLocked: u.isLockedOut || (u.failedLoginAttempts >= 5) || (u.lockoutEnd && new Date(u.lockoutEnd) > new Date())
   }));
   const filtered = filter === "All" ? displayUsers : displayUsers.filter((u) => u.role === filter);
 
@@ -57,7 +58,7 @@ export default function Users() {
     { label: "Total users", value: displayUsers.length.toString(), sub: `${displayUsers.filter((u) => u.isActive).length} active`, subColor: "#10b981" },
     { label: "Instructors", value: displayUsers.filter((u) => u.role === "Instructor").length.toString(), sub: "Teaching staff", subColor: "#6b7280" },
     { label: "Students", value: displayUsers.filter((u) => u.role === "Student").length.toString(), sub: "Enrolled learners", subColor: "#6b7280" },
-    { label: "Operators", value: displayUsers.filter((u) => u.role === "Operator").length.toString(), sub: "Operations staff", subColor: "#6b7280" },
+    { label: "Locked", value: displayUsers.filter((u) => u._isLocked).length.toString(), sub: displayUsers.filter((u) => u._isLocked).length > 0 ? "Needs attention" : "All clear", subColor: displayUsers.filter((u) => u._isLocked).length > 0 ? "#ef4444" : "#10b981" },
   ];
 
   const handleOpenModal = (user = null) => {
@@ -237,9 +238,9 @@ export default function Users() {
                     <td style={s.td}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <StatusBadge status={u.isActive ? "Active" : "Inactive"} />
-                        {u.isLockedOut && (
+                        {u._isLocked && (
                           <span
-                            title={u.lockoutEnd ? `Locked until ${new Date(u.lockoutEnd).toLocaleString()}` : "Locked by administrator"}
+                            title={u.lockoutEnd ? `Locked until ${new Date(u.lockoutEnd).toLocaleString()} | Failed attempts: ${u.failedLoginAttempts || 0}` : `Locked | Failed attempts: ${u.failedLoginAttempts || 0}`}
                             style={{ background: "#fee2e2", color: "#ef4444", border: "1px solid #fca5a5", padding: "4px 10px", borderRadius: 12, fontSize: 12, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4, cursor: "help", position: "relative" }}
                           >
                             🔒 Locked
@@ -257,7 +258,7 @@ export default function Users() {
                       <div style={{ display: "flex", gap: 8 }}>
                         <button onClick={() => handleOpenModal(u)} style={s.actionBtn}>Edit</button>
                         <button onClick={() => handleDeactivate(u.id)} style={{...s.actionBtn, color: u.isActive ? "#ef4444" : "#10b981"}}>{u.isActive ? "Disable" : "Enable"}</button>
-                        {u.isLockedOut && (
+                        {u._isLocked && (
                           <button onClick={() => handleUnlock(u.id)} style={{...s.actionBtn, color: "#7c3aed"}}>Unlock Account</button>
                         )}
                       </div>
@@ -283,7 +284,7 @@ export default function Users() {
         }
       >
         <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {selectedUser?.isLockedOut && (
+          {selectedUser?._isLocked && (
             <div style={{
               background: "#fee2e2",
               color: "#ef4444",
