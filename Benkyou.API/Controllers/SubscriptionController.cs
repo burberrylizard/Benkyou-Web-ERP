@@ -105,7 +105,13 @@ public class SubscriptionController(BenkyouDbContext db) : BaseController
         var plan = await _db.SubscriptionPlans.FindAsync(id);
         if (plan == null) return NotFound();
 
-        plan.Name = request.Name;
+        var name = request.Name.Trim();
+        if (await _db.SubscriptionPlans.AnyAsync(p => p.PlanID != id && p.Name.ToLower() == name.ToLower()))
+        {
+            return BadRequest(new { message = "Subscription plan with this name already exists." });
+        }
+
+        plan.Name = name;
         plan.PriceMonthly = request.PriceMonthly;
         plan.IsActive = request.IsActive;
         

@@ -1,0 +1,662 @@
+// Benkyou Web ERP Database Schema (DBML)
+// Copy and paste this content into https://dbdiagram.io
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+Enum UserRole {
+  Admin [note: '1']
+  Instructor [note: '2']
+  Student [note: '3']
+  Member [note: '4']
+  Operator [note: '5']
+}
+
+Enum ContentTypeEnum {
+  Link
+  File
+  Text
+}
+
+Enum EnrollmentRequestStatus {
+  Pending [note: '0']
+  Approved [note: '1']
+  Rejected [note: '2']
+}
+
+// ==========================================
+// 1. ORGANIZATIONS & SUBSCRIPTIONS
+// ==========================================
+
+Table Organizations {
+  TenantID uuid [pk, default: `NEWID()`]
+  TenantCode varchar [not null, unique]
+  Name varchar [not null, unique]
+  LogoUrl varchar
+  PrimaryEmail varchar
+  Phone varchar
+  Address varchar
+  CountryCode varchar
+  TimeZone varchar
+  SubscriptionID int [not null]
+  IsActive boolean [not null, default: true]
+  OrganizationType varchar [not null, default: 'HigherEducation', note: 'HigherEducation, K12, Corporate, General']
+  IsMfaRequired boolean [not null, default: false]
+  AllowedMfaMethods varchar [not null, default: 'Email,Authenticator']
+  StripeCustomerId varchar
+  StripeSubscriptionId varchar
+  SubscriptionStatus varchar
+  CreatedAt datetime [not null]
+  UpdatedAt datetime [not null]
+
+  Indexes {
+    TenantID [unique]
+    TenantCode [unique]
+    Name [unique]
+  }
+}
+
+Table SubscriptionPlans {
+  PlanID int [pk, increment]
+  PlanCode varchar [not null, unique]
+  Name varchar [not null, unique]
+  MaxUsers int [not null]
+  MaxCourses int [not null]
+  MaxStorageGB int [not null]
+  PriceMonthly "decimal(7,2)" [not null]
+  PriceYearly "decimal(8,2)" [not null]
+  StripeProductId varchar
+  StripePriceIdMonthly varchar
+  StripePriceIdYearly varchar
+  IsActive boolean [not null, default: true]
+  CreatedAt datetime [not null, default: `now()`]
+
+  Indexes {
+    Name [unique]
+    PlanCode [unique]
+  }
+}
+
+Table Subscriptions {
+  SubscriptionID int [pk, increment]
+  TenantID uuid [not null]
+  PlanID int [not null]
+  Status varchar [not null]
+  TrialEndsAt datetime
+  BillingCycleStart datetime
+  BillingCycleEnd datetime
+  AutoRenew boolean [not null, default: true]
+  Notes text
+  StripeSubscriptionId varchar
+  StripeCustomerId varchar
+  CreatedAt datetime [not null, default: `now()`]
+  UpdatedAt datetime
+}
+
+Table SuperAdmins {
+  Id uuid [pk, default: `NEWID()`]
+  Email varchar [not null]
+  FirstName varchar [not null]
+  LastName varchar [not null]
+  PasswordHash varchar [not null]
+  IsActive boolean [not null, default: true]
+  CreatedAt datetime [not null, default: `now()`]
+  TwoFactorEnabled boolean [not null, default: false]
+  OtpCode varchar
+  OtpExpiry datetime
+}
+
+// ==========================================
+// 2. USERS & IDENTITY
+// ==========================================
+
+Table Users {
+  Id uuid [pk]
+  TenantID uuid [not null]
+  UserName varchar
+  NormalizedUserName varchar
+  Email varchar
+  NormalizedEmail varchar
+  EmailConfirmed boolean [not null]
+  PasswordHash varchar
+  SecurityStamp varchar
+  ConcurrencyStamp varchar
+  PhoneNumber varchar
+  PhoneNumberConfirmed boolean [not null]
+  TwoFactorEnabled boolean [not null]
+  LockoutEnd datetime
+  LockoutEnabled boolean [not null]
+  AccessFailedCount int [not null]
+  FirstName varchar [not null]
+  LastName varchar [not null]
+  Role UserRole [not null]
+  YearEnrolled int
+  YearLevel varchar
+  Program varchar
+  IsActive boolean [not null, default: true]
+  CreatedAt datetime [not null, default: `now()`]
+  TermsAccepted boolean [not null]
+  TermsVersion varchar
+  TermsAcceptedAt datetime
+  TermsAcceptedIp varchar
+  ProfilePhotoUrl varchar
+  ProfilePhotoPublicId varchar
+  FailedLoginAttempts int [not null, default: 0]
+  IsLockedOut boolean [not null, default: false]
+
+  Indexes {
+    (TenantID, Email) [unique]
+  }
+}
+
+Table Roles {
+  Id uuid [pk]
+  Name varchar
+  NormalizedName varchar
+  ConcurrencyStamp varchar
+}
+
+Table UserRoles {
+  UserId uuid [not null]
+  RoleId uuid [not null]
+
+  Indexes {
+    (UserId, RoleId) [pk]
+  }
+}
+
+Table UserClaims {
+  Id int [pk, increment]
+  UserId uuid [not null]
+  ClaimType varchar
+  ClaimValue varchar
+}
+
+Table UserLogins {
+  LoginProvider varchar [not null]
+  ProviderKey varchar [not null]
+  ProviderDisplayName varchar
+  UserId uuid [not null]
+
+  Indexes {
+    (LoginProvider, ProviderKey) [pk]
+  }
+}
+
+Table RoleClaims {
+  Id int [pk, increment]
+  RoleId uuid [not null]
+  ClaimType varchar
+  ClaimValue varchar
+}
+
+Table UserTokens {
+  UserId uuid [not null]
+  LoginProvider varchar [not null]
+  Name varchar [not null]
+  Value varchar
+
+  Indexes {
+    (UserId, LoginProvider, Name) [pk]
+  }
+}
+
+Table StudentProfiles {
+  StudentProfileID int [pk, increment]
+  UserID uuid [not null]
+  TenantID uuid [not null]
+  StudentNumber varchar
+}
+
+Table InstructorProfiles {
+  InstructorProfileID int [pk, increment]
+  UserID uuid [not null]
+  TenantID uuid [not null]
+  EmployeeNumber varchar
+  Department varchar
+}
+
+Table TermsAcceptances {
+  Id uuid [pk, default: `NEWID()`]
+  UserID uuid [not null]
+  TermsVersion varchar [not null, default: '1.0']
+  AcceptedAt datetime [not null, default: `now()`]
+  IpAddress varchar [not null]
+  UserAgent varchar [not null]
+}
+
+Table EmailVerificationCodes {
+  Id uuid [pk]
+  UserId uuid [not null]
+  Code varchar(6) [not null]
+  Expiry datetime [not null]
+  CreatedAt datetime [not null, default: `now()`]
+  IsUsed boolean [not null, default: false]
+}
+
+// ==========================================
+// 3. COURSES & CONTENT
+// ==========================================
+
+Table Categories {
+  CategoryID int [pk, increment]
+  TenantID uuid [not null]
+  Name varchar [not null]
+  IsActive boolean [not null, default: true]
+
+  Indexes {
+    (TenantID, Name) [unique]
+  }
+}
+
+Table Courses {
+  CourseID int [pk, increment]
+  TenantID uuid [not null]
+  Title varchar [not null]
+  Description text [not null]
+  CategoryID int [not null]
+  CreatedByUserID uuid [not null]
+  Status varchar [not null, default: 'Draft']
+  IsPublished boolean [not null, default: false]
+  IsHidden boolean [not null, default: false]
+  IsActive boolean [not null, default: true]
+  CreatedAt datetime [not null, default: `now()`]
+
+  Indexes {
+    (TenantID, Title) [unique]
+  }
+}
+
+Table CourseInstructors {
+  CourseInstructorID int [pk, increment]
+  TenantID uuid [not null]
+  CourseID int [not null]
+  InstructorID uuid [not null]
+  AssignedAt datetime [not null]
+}
+
+Table ClassSections {
+  ClassSectionID int [pk, increment]
+  TenantID uuid [not null]
+  CourseID int [not null]
+  Name varchar [not null]
+  Capacity int [not null, default: 40]
+  CreatedAt datetime [not null, default: `now()`]
+  InstructorID uuid
+
+  Indexes {
+    (CourseID, Name) [unique]
+    TenantID
+  }
+}
+
+Table CourseSections {
+  CourseSectionID int [pk, increment]
+  TenantID uuid [not null]
+  CourseID int [not null]
+  Title varchar [not null]
+  Description text [not null]
+  IsActive boolean [not null, default: true]
+  CreatedAt datetime [not null, default: `now()`]
+
+  Indexes {
+    (CourseID, Title) [unique]
+  }
+}
+
+Table ContentItems {
+  ContentItemID int [pk, increment]
+  TenantID uuid [not null]
+  CourseSectionID int [not null]
+  Title varchar [not null]
+  ContentType varchar [not null]
+  Type ContentTypeEnum [not null]
+  Value text [not null]
+  Description text
+  Body text [not null]
+  FileUrl varchar [not null]
+  SortOrder int [not null]
+  IsHidden boolean [not null, default: false]
+  IsActive boolean [not null, default: true]
+  CreatedAt datetime [not null, default: `now()`]
+
+  Indexes {
+    (CourseSectionID, Title) [unique]
+  }
+}
+
+Table ContentProgresses {
+  ContentProgressID int [pk, increment]
+  TenantID uuid [not null]
+  EnrollmentID int [not null]
+  ContentItemID int [not null]
+  IsCompleted boolean [not null]
+  CompletedAt datetime
+  TimeSpentSeconds int [not null]
+}
+
+// ==========================================
+// 4. ENROLLMENTS
+// ==========================================
+
+Table Enrollments {
+  EnrollmentID int [pk, increment]
+  TenantID uuid [not null]
+  CourseID int [not null]
+  StudentID uuid [not null]
+  Status varchar [not null, default: 'Active']
+  ClassSectionID int
+  EnrolledAt datetime [not null]
+  CompletedAt datetime
+  DeadlineAt datetime
+}
+
+Table EnrollmentRequests {
+  Id int [pk, increment]
+  TenantID uuid [not null]
+  StudentID uuid [not null]
+  CourseID int [not null]
+  Status EnrollmentRequestStatus [not null, default: `EnrollmentRequestStatus.Pending`]
+  RequestedAt datetime [not null, default: `now()`]
+  ReviewedAt datetime
+  ReviewedByUserID uuid
+  RejectionReason text
+}
+
+Table BatchEnrollmentLogs {
+  Id int [pk, increment]
+  TenantID uuid [not null]
+  CourseID int [not null]
+  EnrolledByUserID uuid [not null]
+  FilterProgram varchar
+  FilterYearLevel varchar
+  StudentsEnrolled int [not null]
+  CreatedAt datetime [not null, default: `now()`]
+
+  Indexes {
+    TenantID
+  }
+}
+
+// ==========================================
+// 5. ASSESSMENTS & EXAMS
+// ==========================================
+
+Table Assessments {
+  AssessmentID int [pk, increment]
+  TenantID uuid [not null]
+  CourseID int [not null]
+  Title varchar [not null]
+  Type varchar [not null]
+  TimeLimitMinutes int [not null]
+  PassingScore "decimal(5,2)" [not null]
+  MaxAttempts int [not null, default: 1]
+  ShuffleQuestions boolean [not null]
+  ShowAnswersAfter varchar [not null, default: 'Submission', note: 'Submission | Never']
+  Status varchar [not null, default: 'Draft', note: 'Draft | Published']
+  DueDate datetime
+  IsActive boolean [not null, default: true]
+  CreatedAt datetime [not null, default: `now()`]
+  UpdatedAt datetime [not null, default: `now()`]
+
+  Indexes {
+    (CourseID, Title) [unique]
+  }
+}
+
+Table Questions {
+  QuestionID int [pk, increment]
+  TenantID uuid [not null]
+  AssessmentID int [not null]
+  Body text [not null]
+  QuestionType varchar [not null, default: 'MultipleChoice', note: 'MultipleChoice | Essay']
+  Points "decimal(5,2)" [not null]
+  SortOrder int [not null]
+  GradingNotes text
+}
+
+Table QuestionChoices {
+  QuestionChoiceID int [pk, increment]
+  TenantID uuid [not null]
+  QuestionID int [not null]
+  ChoiceText text [not null]
+  IsCorrect boolean [not null]
+  SortOrder int [not null]
+}
+
+Table StudentAttempts {
+  StudentAttemptID int [pk, increment]
+  TenantID uuid [not null]
+  AssessmentID int [not null]
+  StudentID uuid [not null]
+  StartedAt datetime [not null, default: `now()`]
+  SubmittedAt datetime
+  Score "decimal(5,2)"
+  AttemptNumber int [not null, default: 1]
+  Status varchar [not null, default: 'InProgress', note: 'InProgress | Submitted | Graded']
+}
+
+Table StudentAnswers {
+  StudentAnswerID int [pk, increment]
+  StudentAttemptID int [not null]
+  QuestionID int [not null]
+  SelectedChoiceID int
+  EssayAnswer text
+  ManualScore "decimal(5,2)"
+  InstructorFeedback text
+  IsCorrect boolean
+}
+
+Table AssessmentResults {
+  AssessmentResultID int [pk, increment]
+  TenantID uuid [not null]
+  AssessmentID int [not null]
+  StudentID uuid [not null]
+  Score "decimal(5,2)" [not null]
+  IsPassed boolean [not null]
+  SubmittedAt datetime [not null]
+  Status varchar [not null, default: 'Graded']
+}
+
+// ==========================================
+// 6. ANNOUNCEMENTS, LOGS & NOTIFICATIONS
+// ==========================================
+
+Table CourseAnnouncements {
+  CourseAnnouncementID int [pk, increment]
+  TenantID uuid [not null]
+  CourseID int [not null]
+  Title varchar [not null]
+  Body text [not null]
+  AllowReplies boolean [not null, default: true]
+  AuthorID uuid [not null]
+  CreatedAt datetime [not null, default: `now()`]
+
+  Indexes {
+    TenantID
+  }
+}
+
+Table AnnouncementReplies {
+  AnnouncementReplyID int [pk, increment]
+  TenantID uuid [not null]
+  CourseAnnouncementID int [not null]
+  UserID uuid [not null]
+  Body text [not null]
+  CreatedAt datetime [not null, default: `now()`]
+
+  Indexes {
+    TenantID
+  }
+}
+
+Table AuditLogs {
+  AuditLogID int [pk, increment]
+  TenantID uuid [not null]
+  UserID uuid [not null]
+  Action varchar [not null]
+  EntityType varchar [not null]
+  EntityID varchar [not null]
+  OldValues text [not null]
+  NewValues text [not null]
+  IPAddress varchar [not null]
+  CreatedAt datetime [not null]
+}
+
+Table Notifications {
+  NotificationID int [pk, increment]
+  TenantID uuid [not null]
+  UserID uuid [not null]
+  Type varchar [not null]
+  Title varchar [not null]
+  Message text [not null]
+  ReferenceType varchar [not null]
+  ReferenceID int [not null]
+  IsRead boolean [not null]
+  ReadAt datetime
+  CreatedAt datetime [not null]
+}
+
+// ==========================================
+// RELATIONSHIPS / FOREIGN KEYS
+// ==========================================
+
+// Organizations & Subscriptions
+Ref: Subscriptions.TenantID > Organizations.TenantID
+Ref: Subscriptions.PlanID > SubscriptionPlans.PlanID
+
+// User Identity & Profiles
+Ref: Users.TenantID > Organizations.TenantID
+Ref: StudentProfiles.UserID > Users.Id
+Ref: StudentProfiles.TenantID > Organizations.TenantID
+Ref: InstructorProfiles.UserID > Users.Id
+Ref: InstructorProfiles.TenantID > Organizations.TenantID
+Ref: TermsAcceptances.UserID > Users.Id [delete: cascade]
+Ref: EmailVerificationCodes.UserId > Users.Id
+
+// Identity Tables
+Ref: UserRoles.UserId > Users.Id
+Ref: UserRoles.RoleId > Roles.Id
+Ref: UserClaims.UserId > Users.Id
+Ref: UserLogins.UserId > Users.Id
+Ref: UserTokens.UserId > Users.Id
+Ref: RoleClaims.RoleId > Roles.Id
+
+// Courses & Sections
+Ref: Categories.TenantID > Organizations.TenantID
+Ref: Courses.TenantID > Organizations.TenantID
+Ref: Courses.CategoryID > Categories.CategoryID [delete: restrict]
+Ref: Courses.CreatedByUserID > Users.Id [delete: restrict]
+Ref: CourseInstructors.TenantID > Organizations.TenantID
+Ref: CourseInstructors.CourseID > Courses.CourseID
+Ref: CourseInstructors.InstructorID > Users.Id [delete: restrict]
+Ref: ClassSections.TenantID > Organizations.TenantID
+Ref: ClassSections.CourseID > Courses.CourseID [delete: cascade]
+Ref: ClassSections.InstructorID > Users.Id [delete: restrict]
+Ref: CourseSections.TenantID > Organizations.TenantID
+Ref: CourseSections.CourseID > Courses.CourseID [delete: cascade]
+Ref: ContentItems.TenantID > Organizations.TenantID
+Ref: ContentItems.CourseSectionID > CourseSections.CourseSectionID [delete: cascade]
+Ref: ContentProgresses.TenantID > Organizations.TenantID
+Ref: ContentProgresses.EnrollmentID > Enrollments.EnrollmentID [delete: restrict]
+Ref: ContentProgresses.ContentItemID > ContentItems.ContentItemID [delete: cascade]
+
+// Enrollments
+Ref: Enrollments.TenantID > Organizations.TenantID
+Ref: Enrollments.CourseID > Courses.CourseID
+Ref: Enrollments.StudentID > Users.Id [delete: restrict]
+Ref: Enrollments.ClassSectionID > ClassSections.ClassSectionID [delete: restrict]
+Ref: EnrollmentRequests.TenantID > Organizations.TenantID
+Ref: EnrollmentRequests.StudentID > Users.Id [delete: restrict]
+Ref: EnrollmentRequests.CourseID > Courses.CourseID [delete: restrict]
+Ref: EnrollmentRequests.ReviewedByUserID > Users.Id [delete: restrict]
+Ref: BatchEnrollmentLogs.TenantID > Organizations.TenantID
+Ref: BatchEnrollmentLogs.CourseID > Courses.CourseID [delete: restrict]
+Ref: BatchEnrollmentLogs.EnrolledByUserID > Users.Id [delete: restrict]
+
+// Assessments & Quizzes
+Ref: Assessments.TenantID > Organizations.TenantID
+Ref: Assessments.CourseID > Courses.CourseID
+Ref: Questions.TenantID > Organizations.TenantID
+Ref: Questions.AssessmentID > Assessments.AssessmentID
+Ref: QuestionChoices.TenantID > Organizations.TenantID
+Ref: QuestionChoices.QuestionID > Questions.QuestionID
+Ref: StudentAttempts.TenantID > Organizations.TenantID
+Ref: StudentAttempts.AssessmentID > Assessments.AssessmentID [delete: cascade]
+Ref: StudentAttempts.StudentID > Users.Id [delete: restrict]
+Ref: StudentAnswers.StudentAttemptID > StudentAttempts.StudentAttemptID [delete: cascade]
+Ref: StudentAnswers.QuestionID > Questions.QuestionID [delete: restrict]
+Ref: StudentAnswers.SelectedChoiceID > QuestionChoices.QuestionChoiceID
+Ref: AssessmentResults.TenantID > Organizations.TenantID
+Ref: AssessmentResults.AssessmentID > Assessments.AssessmentID
+Ref: AssessmentResults.StudentID > Users.Id
+
+// Announcements, Logs & Notifications
+Ref: CourseAnnouncements.TenantID > Organizations.TenantID
+Ref: CourseAnnouncements.CourseID > Courses.CourseID [delete: cascade]
+Ref: CourseAnnouncements.AuthorID > Users.Id [delete: restrict]
+Ref: AnnouncementReplies.TenantID > Organizations.TenantID
+Ref: AnnouncementReplies.CourseAnnouncementID > CourseAnnouncements.CourseAnnouncementID [delete: cascade]
+Ref: AnnouncementReplies.UserID > Users.Id [delete: restrict]
+Ref: AuditLogs.TenantID > Organizations.TenantID
+Ref: AuditLogs.UserID > Users.Id
+Ref: Notifications.TenantID > Organizations.TenantID
+Ref: Notifications.UserID > Users.Id
+
+// ==========================================
+// TABLE GROUPS
+// ==========================================
+
+TableGroup Organization_and_Subscriptions {
+  Organizations
+  SubscriptionPlans
+  Subscriptions
+  SuperAdmins
+}
+
+TableGroup Users_and_Identity {
+  Users
+  Roles
+  UserRoles
+  UserClaims
+  UserLogins
+  RoleClaims
+  UserTokens
+  StudentProfiles
+  InstructorProfiles
+  TermsAcceptances
+  EmailVerificationCodes
+}
+
+TableGroup Course_Management {
+  Categories
+  Courses
+  CourseInstructors
+  ClassSections
+  CourseSections
+  ContentItems
+  ContentProgresses
+}
+
+TableGroup Enrollment_Management {
+  Enrollments
+  EnrollmentRequests
+  BatchEnrollmentLogs
+}
+
+TableGroup Assessment_System {
+  Assessments
+  Questions
+  QuestionChoices
+  StudentAttempts
+  StudentAnswers
+  AssessmentResults
+}
+
+TableGroup Communication_and_Audit {
+  CourseAnnouncements
+  AnnouncementReplies
+  Notifications
+  AuditLogs
+}

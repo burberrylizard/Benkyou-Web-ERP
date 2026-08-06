@@ -79,10 +79,16 @@ public class CoursesController(BenkyouDbContext db) : BaseController
     [Authorize(Roles = "Admin,Operator,SuperAdmin")]
     public async Task<IActionResult> Create(CreateCourseDto dto)
     {
+        var title = dto.Title.Trim();
+        if (await _db.Courses.AnyAsync(c => c.TenantID == TenantId && c.Title.ToLower() == title.ToLower()))
+        {
+            return BadRequest(new { message = "Course with this name already exists." });
+        }
+
         var course = new Course
         {
             TenantID = TenantId,
-            Title = dto.Title,
+            Title = title,
             Description = dto.Description,
             CategoryID = dto.CategoryID,
             CreatedByUserID = Guid.Parse(User.FindFirst("uid")!.Value),

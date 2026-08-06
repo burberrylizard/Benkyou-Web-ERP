@@ -70,8 +70,15 @@ public class AssessmentsController(BenkyouDbContext db, AssessmentBuilderService
         if (course == null)
             return BadRequest(new { message = "Invalid course" });
 
-        var result = await _svc.CreateAssessmentAsync(request.CourseId, course.TenantID, request.Title, request.Type ?? "Quiz");
-        return Ok(result);
+        try
+        {
+            var result = await _svc.CreateAssessmentAsync(request.CourseId, course.TenantID, request.Title, request.Type ?? "Quiz");
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     // GET /api/assessments/{id} — get assessment with questions

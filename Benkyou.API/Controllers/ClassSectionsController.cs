@@ -49,11 +49,17 @@ namespace Benkyou.API.Controllers
             var course = await _db.Courses.FirstOrDefaultAsync(c => c.CourseID == req.CourseId && (IsSuperAdmin || c.TenantID == TenantId));
             if (course == null) return NotFound("Course not found");
 
+            var name = req.Name.Trim();
+            if (await _db.ClassSections.AnyAsync(s => s.CourseID == req.CourseId && s.Name.ToLower() == name.ToLower()))
+            {
+                return BadRequest(new { message = "Class section with this name already exists in this course." });
+            }
+
             var section = new ClassSection
             {
                 CourseID = req.CourseId,
                 TenantID = TenantId,
-                Name = req.Name.Trim(),
+                Name = name,
                 Capacity = req.Capacity,
                 InstructorID = req.InstructorId,
                 CreatedAt = DateTime.UtcNow
@@ -94,7 +100,13 @@ namespace Benkyou.API.Controllers
 
             if (section == null) return NotFound("Section not found");
 
-            section.Name = req.Name.Trim();
+            var name = req.Name.Trim();
+            if (await _db.ClassSections.AnyAsync(s => s.CourseID == section.CourseID && s.ClassSectionID != id && s.Name.ToLower() == name.ToLower()))
+            {
+                return BadRequest(new { message = "Class section with this name already exists in this course." });
+            }
+
+            section.Name = name;
             section.Capacity = req.Capacity;
             section.InstructorID = req.InstructorId;
 

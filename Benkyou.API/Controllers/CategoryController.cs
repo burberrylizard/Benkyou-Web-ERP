@@ -18,9 +18,15 @@ public class CategoriesController(BenkyouDbContext db) : BaseController
     [Authorize(Roles = "Admin,SuperAdmin")]
     public async Task<IActionResult> Create(CreateCategoryDto dto)
     {
+        var name = dto.Name.Trim();
+        if (await _db.Categories.AnyAsync(c => c.TenantID == TenantId && c.Name.ToLower() == name.ToLower()))
+        {
+            return BadRequest(new { message = "Category with this name already exists." });
+        }
+
         var category = new Category
         {
-            Name = dto.Name,
+            Name = name,
             TenantID = TenantId
         };
 

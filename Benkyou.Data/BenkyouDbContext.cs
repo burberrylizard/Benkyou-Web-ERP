@@ -281,6 +281,47 @@ namespace Benkyou.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            mb.Entity<Category>(e =>
+            {
+                e.HasIndex(x => new { x.TenantID, x.Name }).IsUnique();
+            });
+
+            mb.Entity<Course>(e =>
+            {
+                e.HasIndex(x => new { x.TenantID, x.Title }).IsUnique();
+            });
+
+            mb.Entity<Assessment>(e =>
+            {
+                e.HasIndex(x => new { x.CourseID, x.Title }).IsUnique();
+            });
+
+            mb.Entity<ClassSection>(e =>
+            {
+                e.HasIndex(x => new { x.CourseID, x.Name }).IsUnique();
+            });
+
+            mb.Entity<CourseSection>(e =>
+            {
+                e.HasIndex(x => new { x.CourseID, x.Title }).IsUnique();
+            });
+
+            mb.Entity<ContentItem>(e =>
+            {
+                e.HasIndex(x => new { x.CourseSectionID, x.Title }).IsUnique();
+            });
+
+            mb.Entity<Organization>(e =>
+            {
+                e.HasIndex(x => x.Name).IsUnique();
+            });
+
+            mb.Entity<SubscriptionPlan>(e =>
+            {
+                e.HasIndex(x => x.Name).IsUnique();
+                e.HasIndex(x => x.PlanCode).IsUnique();
+            });
+
             // Renaming Identity Tables for cleaner structure (Optional but recommended)
             mb.Entity<User>().ToTable("Users");
             mb.Entity<IdentityRole<Guid>>().ToTable("Roles");

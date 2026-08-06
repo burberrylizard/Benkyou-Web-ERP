@@ -1,4 +1,4 @@
-﻿using Benkyou.Core.DTOs;
+using Benkyou.Core.DTOs;
 using Benkyou.Data;
 using Benkyou.Data.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -47,11 +47,17 @@ public class CourseSectionsController : ControllerBase
         if (course == null)
             return NotFound("Course not found");
 
+        var title = dto.Title.Trim();
+        if (await _db.CourseSections.AnyAsync(s => s.CourseID == dto.CourseID && s.Title.ToLower() == title.ToLower()))
+        {
+            return BadRequest(new { message = "Course section with this title already exists in this course." });
+        }
+
         var section = new CourseSection
         {
             CourseID = dto.CourseID,
             TenantID = course.TenantID,
-            Title = dto.Title,
+            Title = title,
             Description = dto.Description
         };
 

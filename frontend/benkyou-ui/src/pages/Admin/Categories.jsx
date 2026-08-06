@@ -62,7 +62,7 @@ export default function Categories() {
       <div style={s.tableCard}>
         <div style={s.cardHeader}>
           <h2 style={s.cardTitle}>All categories</h2>
-          <Button onClick={() => setIsModalOpen(true)}>+ Add category</Button>
+          <Button onClick={() => { setError(""); setNewCategoryName(""); setIsModalOpen(true); }}>+ Add category</Button>
         </div>
         
         {isLoading ? (

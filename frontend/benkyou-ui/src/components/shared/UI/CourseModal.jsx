@@ -3,13 +3,14 @@ import Modal from "./Modal";
 import Button from "./Button";
 import { getCategories } from "../../../services/categoryService";
 
-export default function CourseModal({ isOpen, onClose, onSave, isSubmitting, initialData = null }) {
+export default function CourseModal({ isOpen, onClose, onSave, isSubmitting, initialData = null, error: externalError = "" }) {
   const [form, setForm] = useState({ title: "", description: "", categoryId: "" });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
+      setError("");
       if (initialData) {
         setForm({
           title: initialData.title || "",
@@ -34,12 +35,15 @@ export default function CourseModal({ isOpen, onClose, onSave, isSubmitting, ini
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError("");
     if (!form.title || !form.categoryId) {
       setError("Title and Category are required.");
       return;
     }
     onSave(form);
   };
+
+  const displayError = externalError || error;
 
   return (
     <Modal 
@@ -87,7 +91,7 @@ export default function CourseModal({ isOpen, onClose, onSave, isSubmitting, ini
             ))}
           </select>
         </div>
-        {error && <div style={{ color: "var(--danger)", fontSize: 13 }}>{error}</div>}
+        {displayError && <div style={{ color: "#ef4444", fontSize: 13 }}>{displayError}</div>}
       </form>
     </Modal>
   );

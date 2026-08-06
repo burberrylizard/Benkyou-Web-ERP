@@ -11,11 +11,17 @@ namespace Benkyou.Core.Services
         // ── CREATE ──
         public async Task<Assessment> CreateAssessmentAsync(int courseId, Guid tenantId, string title, string type = "Quiz")
         {
+            var cleanedTitle = title.Trim();
+            if (await _db.Assessments.AnyAsync(a => a.CourseID == courseId && a.Title.ToLower() == cleanedTitle.ToLower()))
+            {
+                throw new InvalidOperationException("Assessment with this name already exists in this course.");
+            }
+
             var assessment = new Assessment
             {
                 CourseID = courseId,
                 TenantID = tenantId,
-                Title = title,
+                Title = cleanedTitle,
                 Type = type,
                 Status = "Draft",
                 IsActive = true,

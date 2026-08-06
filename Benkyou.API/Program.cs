@@ -357,6 +357,76 @@ var app = builder.Build();
 // Enable Forwarded Headers first in the pipeline for correct IP and protocol detection under reverse proxies/CDNs
 app.UseForwardedHeaders();
 
+// GLOBAL EXCEPTION HANDLING MIDDLEWARE — Guarantees CORS headers & clean JSON error responses
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        var appLogger = context.RequestServices.GetService<ILogger<Program>>();
+        appLogger?.LogError(ex, "Global Exception Middleware caught an unhandled exception.");
+
+        var origin = context.Request.Headers.Origin.ToString();
+        if (!string.IsNullOrEmpty(origin))
+        {
+            context.Response.Headers.AccessControlAllowOrigin = origin;
+            context.Response.Headers.AccessControlAllowCredentials = "true";
+            context.Response.Headers.AccessControlAllowHeaders = "*";
+            context.Response.Headers.AccessControlAllowMethods = "*";
+        }
+
+        context.Response.ContentType = "application/json";
+
+        int statusCode = StatusCodes.Status400BadRequest;
+        string message = ex.Message;
+
+        if (ex is DbUpdateException dbEx)
+        {
+            var innerMsg = dbEx.InnerException?.Message ?? dbEx.Message;
+            if (innerMsg.Contains("2601") || innerMsg.Contains("2627") || innerMsg.Contains("IX_") || innerMsg.Contains("UNIQUE KEY") || innerMsg.Contains("unique index"))
+            {
+                if (innerMsg.Contains("Categories") || innerMsg.Contains("IX_Categories"))
+                    message = "Category with this name already exists.";
+                else if (innerMsg.Contains("Courses") || innerMsg.Contains("IX_Courses"))
+                    message = "Course with this name already exists.";
+                else if (innerMsg.Contains("Assessments") || innerMsg.Contains("IX_Assessments"))
+                    message = "Assessment with this name already exists in this course.";
+                else if (innerMsg.Contains("ClassSections") || innerMsg.Contains("IX_ClassSections"))
+                    message = "Class section with this name already exists in this course.";
+                else if (innerMsg.Contains("CourseSections") || innerMsg.Contains("IX_CourseSections"))
+                    message = "Course section with this title already exists in this course.";
+                else if (innerMsg.Contains("ContentItems") || innerMsg.Contains("IX_ContentItems"))
+                    message = "Content item with this title already exists in this section.";
+                else if (innerMsg.Contains("Organizations") || innerMsg.Contains("IX_Organizations"))
+                    message = "Organization with this name already exists.";
+                else if (innerMsg.Contains("SubscriptionPlans") || innerMsg.Contains("IX_SubscriptionPlans"))
+                    message = "Subscription plan with this name or code already exists.";
+                else
+                    message = "A record with this name already exists.";
+            }
+            else
+            {
+                message = "Database operation failed. " + innerMsg;
+            }
+        }
+        else if (ex is UnauthorizedAccessException)
+        {
+            statusCode = StatusCodes.Status401Unauthorized;
+            message = string.IsNullOrWhiteSpace(ex.Message) ? "Unauthorized access" : ex.Message;
+        }
+        else if (ex is KeyNotFoundException)
+        {
+            statusCode = StatusCodes.Status404NotFound;
+        }
+
+        context.Response.StatusCode = statusCode;
+        await context.Response.WriteAsJsonAsync(new { success = false, message });
+    }
+});
+
 
 // SEED DATA
 using (var scope = app.Services.CreateScope())

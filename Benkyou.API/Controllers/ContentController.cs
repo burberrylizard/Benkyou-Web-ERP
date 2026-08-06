@@ -48,11 +48,17 @@ public class ContentController : ControllerBase
         if (section == null)
             return NotFound("Section not found");
 
+        var title = dto.Title.Trim();
+        if (await _db.ContentItems.AnyAsync(c => c.CourseSectionID == dto.CourseSectionID && c.Title.ToLower() == title.ToLower()))
+        {
+            return BadRequest(new { message = "Content item with this title already exists in this section." });
+        }
+
         var content = new ContentItem
         {
             CourseSectionID = dto.CourseSectionID,
             TenantID = section.TenantID,
-            Title = dto.Title,
+            Title = title,
             ContentType = dto.ContentType,
             Type = dto.Type,
             Value = dto.Value,

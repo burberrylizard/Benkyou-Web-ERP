@@ -16,29 +16,35 @@ export default function Assessments() {
   const { data: courses } = useApiData(getCourses);
   const [filter, setFilter] = useState("All");
   const [showCreate, setShowCreate] = useState(false);
+  const [createError, setCreateError] = useState("");
   const [createForm, setCreateForm] = useState({ title: "", courseId: "", type: "Quiz" });
   const [creating, setCreating] = useState(false);
 
   const list = assessments || [];
-  const filtered = filter === "All" ? list : list.filter(a => {
-    const status = a.status || a.Status;
-    if (filter === "Published") return status === "Published";
-    if (filter === "Draft") return status === "Draft";
-    return true;
-  });
+  const filtered = filter === "All" ? list : list.filter(a => (a.status || a.Status) === filter);
 
   const handleCreate = async () => {
-    if (!createForm.title || !createForm.courseId) return;
+    if (!createForm.title || !createForm.courseId) {
+      setCreateError("Title and Course are required.");
+      return;
+    }
     setCreating(true);
+    setCreateError("");
     try {
-      const result = await createAssessment(createForm);
+      const result = await createAssessment({
+        ...createForm,
+        courseId: parseInt(createForm.courseId)
+      });
       setShowCreate(false);
       setCreateForm({ title: "", courseId: "", type: "Quiz" });
       reload();
       const newId = result?.assessmentID || result?.assessmentId;
       navigate(tenantPath(`/instructor/assessments/${newId}/builder`));
-    } catch (err) { alert(err.message || "Failed to create assessment"); }
-    finally { setCreating(false); }
+    } catch (err) {
+      setCreateError(err.message || "Failed to create assessment");
+    } finally {
+      setCreating(false);
+    }
   };
 
   const handleDelete = async (aid) => {
@@ -87,7 +93,7 @@ export default function Assessments() {
                 {f}
               </button>
             ))}
-            <button onClick={() => setShowCreate(true)} style={{ ...s.primaryBtn, marginLeft: 8 }}>+ Create assessment</button>
+            <button onClick={() => { setCreateError(""); setShowCreate(true); }} style={{ ...s.primaryBtn, marginLeft: 8 }}>+ Create assessment</button>
           </div>
         </div>
 
@@ -159,6 +165,7 @@ export default function Assessments() {
                   <option>Essay</option>
                 </select>
               </div>
+              {createError && <div style={{ color: "#ef4444", fontSize: 13 }}>{createError}</div>}
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "16px 24px", borderTop: "1px solid #1e3a5f" }}>
               <button onClick={() => setShowCreate(false)} style={s.outlineBtn}>Cancel</button>

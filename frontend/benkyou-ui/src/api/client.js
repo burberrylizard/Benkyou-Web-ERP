@@ -29,11 +29,60 @@ async function parseResponseBody(response) {
 
   const contentType = response.headers.get("content-type") || "";
   if (contentType.includes("application/json")) {
-    return response.json();
+    try {
+      return await response.json();
+    } catch {
+      return null;
+    }
   }
 
   const text = await response.text();
   return text ? { message: text } : null;
+}
+
+function extractErrorMessage(data, status) {
+  if (typeof data === "string" && data.trim()) {
+    return data.trim();
+  }
+
+  if (data && typeof data === "object") {
+    if (data.message && typeof data.message === "string" && data.message.trim()) {
+      return data.message.trim();
+    }
+    if (data.error && typeof data.error === "string" && data.error.trim()) {
+      return data.error.trim();
+    }
+    if (data.detail && typeof data.detail === "string" && data.detail.trim()) {
+      return data.detail.trim();
+    }
+
+    // Handle ASP.NET ModelState errors { errors: { Name: ["Error 1"] } } or { errors: ["Error 1"] }
+    if (data.errors) {
+      if (Array.isArray(data.errors) && data.errors.length > 0) {
+        const first = data.errors[0];
+        if (typeof first === "string") return first.trim();
+        if (first?.description) return first.description;
+      }
+      if (typeof data.errors === "object") {
+        const msgs = Object.values(data.errors).flat().filter(Boolean);
+        if (msgs.length > 0) {
+          return msgs.map(m => (typeof m === "string" ? m.trim() : m.description || JSON.stringify(m))).join(" ");
+        }
+      }
+    }
+
+    if (data.title && typeof data.title === "string" && data.title !== "One or more validation errors occurred.") {
+      return data.title.trim();
+    }
+  }
+
+  if (status === 401) return "Session expired or unauthorized. Please log in again.";
+  if (status === 403) return "You do not have permission to perform this action.";
+  if (status === 404) return "Requested resource was not found.";
+  if (status === 429) return "Too many requests. Please try again later.";
+  if (status >= 500) return "A server error occurred. Please try again or contact support.";
+
+  return `Request failed with status ${status}`;
 }
 
 function handleUnauthorized() {
@@ -92,10 +141,11 @@ export async function apiRequest(path, options = {}) {
   try {
     response = await fetch(url, fetchOptions);
   } catch (error) {
-    throw new ApiError(
-      `Cannot reach the API at ${API_URL}. Check that the backend is running and the browser trusts the HTTPS certificate.`,
-      { cause: error }
-    );
+    const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
+    const msg = isOffline
+      ? "You appear to be offline. Please check your internet connection."
+      : "Unable to reach the server. Please check your network connection or try again later.";
+    throw new ApiError(msg, { cause: error });
   }
 
   const data = await parseResponseBody(response);
@@ -105,13 +155,11 @@ export async function apiRequest(path, options = {}) {
   }
 
   if (!response.ok) {
-    throw new ApiError(
-      data?.message || data?.title || data?.errors?.[0] || `Request failed with status ${response.status}`,
-      {
-        status: response.status,
-        details: data,
-      }
-    );
+    const errorMessage = extractErrorMessage(data, response.status);
+    throw new ApiError(errorMessage, {
+      status: response.status,
+      details: data,
+    });
   }
 
   return data;
