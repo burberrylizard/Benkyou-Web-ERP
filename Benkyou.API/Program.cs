@@ -443,34 +443,23 @@ using (var scope = app.Services.CreateScope())
 
         if (!db.SuperAdmins.Any())
         {
-            logger.LogInformation("STARTUP: Seeding SuperAdmin...");
+            logger.LogInformation("STARTUP: Seeding initial SuperAdmin...");
+            var defaultEmail = builder.Configuration["SuperAdmin:SeedEmail"] ?? "admin@system.com";
+            var defaultPassword = builder.Configuration["SuperAdmin:SeedPassword"] ?? "SuperAdmin@ChangeMe123!";
+            var defaultFirstName = builder.Configuration["SuperAdmin:SeedFirstName"] ?? "System";
+            var defaultLastName = builder.Configuration["SuperAdmin:SeedLastName"] ?? "Administrator";
+
             db.SuperAdmins.Add(new SuperAdmin
             {
-                Email = "admin@system.com",
-                FirstName = "System",
-                LastName = "Administrator",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("SuperAdmin@2026!"),
+                Email = defaultEmail,
+                FirstName = defaultFirstName,
+                LastName = defaultLastName,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword),
                 IsActive = true
             });
 
             db.SaveChanges();
-            logger.LogInformation("STARTUP: SuperAdmin seeded.");
-        }
-
-        if (!db.SuperAdmins.Any(x => x.Email == "charlizejanem@gmail.com"))
-        {
-            logger.LogInformation("STARTUP: Seeding Charlize Jane Inday SuperAdmin...");
-            db.SuperAdmins.Add(new SuperAdmin
-            {
-                Email = "charlizejanem@gmail.com",
-                FirstName = "Charlize Jane",
-                LastName = "Inday",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("GojoSatoru@092423"),
-                IsActive = true
-            });
-
-            db.SaveChanges();
-            logger.LogInformation("STARTUP: Charlize Jane Inday SuperAdmin seeded.");
+            logger.LogInformation("STARTUP: Initial SuperAdmin seeded.");
         }
 
         if (!db.SubscriptionPlans.Any())

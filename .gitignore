@@ -361,3 +361,23 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# =========================================================
+# Security & Secret Management: Do NOT commit to GitHub
+# =========================================================
+appsettings.Production.json
+appsettings.Development.json
+appsettings.*.local.json
+appsettings.local.json
+*.secrets.json
+!appsettings.json
+!appsettings.Production.example.json
+!appsettings.Development.example.json
+
+# Environment variables
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
